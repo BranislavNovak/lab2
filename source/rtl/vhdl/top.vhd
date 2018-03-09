@@ -250,7 +250,45 @@ begin
   --dir_red
   --dir_green
   --dir_blue
+  
+  -- 1. Na ekranu iscrtati 8 vertikalnih pruga iste širine ali razlièitih boja (eng. color bar) koristeæi direct_mode
+  --    i povezati signale direct_mode i display_mode na prekidaèe sa E2LP platformi.
  
+--	dir_red <= x"FF" when (dir_pixel_column < 80) else
+--				 x"00"  when (dir_pixel_column > 80 and dir_pixel_column < 160) else
+--				 x"00"  when (dir_pixel_column > 160 and dir_pixel_column < 240) else
+--				 x"FF"  when (dir_pixel_column > 240 and dir_pixel_column < 320) else
+--				 x"FF"  when (dir_pixel_column > 320 and dir_pixel_column < 400) else
+--				 x"00"  when (dir_pixel_column > 400 and dir_pixel_column < 480) else
+--				 x"FF"  when (dir_pixel_column > 560 and dir_pixel_column < 640) else
+--				 x"00";
+--				
+--	dir_blue <= x"00" when (dir_pixel_column < 80) else
+--				 x"FF"  when (dir_pixel_column > 80 and dir_pixel_column < 160) else
+--				 x"00"  when (dir_pixel_column > 160 and dir_pixel_column < 240) else
+--				 x"FF"  when (dir_pixel_column > 240 and dir_pixel_column < 320) else
+--				 x"00"  when (dir_pixel_column > 320 and dir_pixel_column < 400) else
+--				 x"FF"  when (dir_pixel_column > 400 and dir_pixel_column < 480) else
+--				 x"FF"  when (dir_pixel_column > 560 and dir_pixel_column < 640) else
+--				 x"00";
+--	
+--	dir_green <= x"00" when (dir_pixel_column < 80) else
+--				 x"00"  when (dir_pixel_column > 80 and dir_pixel_column < 160) else
+--				 x"FF"  when (dir_pixel_column > 160 and dir_pixel_column < 240) else
+--				 x"00"  when (dir_pixel_column > 240 and dir_pixel_column < 320) else
+--				 x"FF"  when (dir_pixel_column > 320 and dir_pixel_column < 400) else
+--				 x"FF"  when (dir_pixel_column > 400 and dir_pixel_column < 480) else
+--				 x"FF"  when (dir_pixel_column > 560 and dir_pixel_column < 640) else
+--				 x"00";
+ 
+  
+	dir_green <= x"00" when (dir_pixel_row < 160 and dir_pixel_row > 320) else
+					x"FF";
+					
+	dir_red <= x"FF";
+	dir_blue <= x"00";
+  
+  
   -- koristeci signale realizovati logiku koja pise po TXT_MEM
   --char_address
   --char_value
