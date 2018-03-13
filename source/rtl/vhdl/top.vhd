@@ -157,6 +157,10 @@ architecture rtl of top is
   signal dir_pixel_column    : std_logic_vector(10 downto 0);
   signal dir_pixel_row       : std_logic_vector(10 downto 0);
 
+
+	------------------------------------------
+  signal counter				  : std_logic;
+	------------------------------------------
 begin
 
   -- calculate message lenght from font size
@@ -168,11 +172,11 @@ begin
   graphics_lenght <= conv_std_logic_vector(MEM_SIZE*8*8, GRAPH_MEM_ADDR_WIDTH);
   
   -- removed to inputs pin
-  direct_mode <= '1';
-  display_mode     <= "10";  -- 01 - text mode, 10 - graphics mode, 11 - text & graphics
+  direct_mode <= '0';
+  display_mode     <= "01";  -- 01 - text mode, 10 - graphics mode, 11 - text & graphics
   
   font_size        <= x"1";
-  show_frame       <= '1';
+  show_frame       <= '0';
   foreground_color <= x"FFFFFF";
   background_color <= x"000000";
   frame_color      <= x"FF0000";
@@ -253,7 +257,7 @@ begin
   
   -- 1. Na ekranu iscrtati 8 vertikalnih pruga iste širine ali razlièitih boja (eng. color bar) koristeæi direct_mode
   --    i povezati signale direct_mode i display_mode na prekidaèe sa E2LP platformi.
- 
+-------------------------------------------------------------------------------------------------------------------------------------------
 --	dir_red <= x"FF" when (dir_pixel_column < 80) else
 --				 x"00"  when (dir_pixel_column > 80 and dir_pixel_column < 160) else
 --				 x"00"  when (dir_pixel_column > 160 and dir_pixel_column < 240) else
@@ -280,24 +284,69 @@ begin
 --				 x"FF"  when (dir_pixel_column > 400 and dir_pixel_column < 480) else
 --				 x"FF"  when (dir_pixel_column > 560 and dir_pixel_column < 640) else
 --				 x"00";
- 
+-------------------------------------------------------------------------------------------------------------------------------------------
   
-	dir_green <= x"00" when (dir_pixel_row < 160 and dir_pixel_row > 320) else
-					x"FF";
-					
-	dir_red <= x"FF";
-	dir_blue <= x"00";
+--	dir_green <= x"00" when (dir_pixel_row < 160 and dir_pixel_row > 320) else
+--					x"FF";
+--					
+--	dir_red <= x"FF";
+--	dir_blue <= x"00";
   
   
   -- koristeci signale realizovati logiku koja pise po TXT_MEM
   --char_address
   --char_value
   --char_we
-  
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+--   process (pix_clock_s, reset_n_i) begin
+--		if(reset_n_i = '0') then
+--			 char_address <= (others=>'0');
+--		elsif(pix_clock_s = '1') then
+--			if(char_we = '1') then
+--				char_address <= char_address + 1;
+--			 elsif(char_address = "0001001011000000") then
+--				char_address <= (others=>'0');
+--			 else char_address <= char_address;
+--			end if;
+--		end if;
+--	end process;
+--
+--	char_we <= '1';
+--						
+--	-- printing LPRS2 on screen -- 
+--	char_value <= "001100" when (char_address = "000000" & x"02") else
+--						"010000" when (char_address = "000000" & x"03") else
+--						"010010" when (char_address = "000000" & x"04") else
+--						"010011" when (char_address = "000000" & x"05") else
+--						"110010" when (char_address = "000000" & x"06") else
+--						"100000";
+						
+-------------------------------------------------------------------------------------------------------------------------------------------
   -- koristeci signale realizovati logiku koja pise po GRAPH_MEM
   --pixel_address
   --pixel_value
   --pixel_we
-  
+	pixel_we <= '1';
+	
+   process (pix_clock_s, reset_n_i) begin
+		if(reset_n_i = '0') then
+			 pixel_address <= (others=>'0');
+		elsif(pix_clock_s = '1') then
+			if(pixel_we = '1') then
+				pixel_address <= pixel_address + 1;
+			 elsif(pixel_address = "0000000111000010") then
+				pixel_address <= (others=>'0');
+			 else pixel_address <= pixel_address;
+			end if;
+		end if;
+	end process;
+	
+	pixel_value <= "00000000000000000000000000001100" when (pixel_address = "000000" & x"02") else
+						"00000000000000000000000000010000" when (pixel_address = "000000" & x"03") else
+						"00000000000000000000000000010010" when (pixel_address = "000000" & x"04") else
+						"00000000000000000000000000010011" when (pixel_address = "000000" & x"05") else
+						"00000000000000000000000000110010" when (pixel_address = "000000" & x"06") else
+						"00000000000000000000000000100000";
   
 end rtl;
