@@ -160,6 +160,10 @@ architecture rtl of top is
 
 	------------------------------------------
   signal counter				  : std_logic;
+  signal help_c				  : std_logic_vector(13 downto 0);
+  signal help_c_g       	  : std_logic_vector(GRAPH_MEM_ADDR_WIDTH-1 downto 0);
+  signal mover 	       	  : std_logic_vector(GRAPH_MEM_ADDR_WIDTH-1 downto 0);
+  signal endofscreen			  : std_logic_vector(13 downto 0); 
 	------------------------------------------
 begin
 
@@ -173,7 +177,7 @@ begin
   
   -- removed to inputs pin
   direct_mode <= '0';
-  display_mode     <= "01";  -- 01 - text mode, 10 - graphics mode, 11 - text & graphics
+  display_mode     <= "10";  -- 01 - text mode, 10 - graphics mode, 11 - text & graphics
   
   font_size        <= x"1";
   show_frame       <= '0';
@@ -255,8 +259,8 @@ begin
   --dir_green
   --dir_blue
   
-  -- 1. Na ekranu iscrtati 8 vertikalnih pruga iste širine ali razlièitih boja (eng. color bar) koristeæi direct_mode
-  --    i povezati signale direct_mode i display_mode na prekidaèe sa E2LP platformi.
+  -- 1. Na ekranu iscrtati 8 vertikalnih pruga iste ?irine ali razlieitih boja (eng. color bar) koristeai direct_mode
+  --    i povezati signale direct_mode i display_mode na prekidaee sa E2LP platformi.
 -------------------------------------------------------------------------------------------------------------------------------------------
 --	dir_red <= x"FF" when (dir_pixel_column < 80) else
 --				 x"00"  when (dir_pixel_column > 80 and dir_pixel_column < 160) else
@@ -298,22 +302,21 @@ begin
   --char_value
   --char_we
 
--------------------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------------------
 --   process (pix_clock_s, reset_n_i) begin
 --		if(reset_n_i = '0') then
---			 char_address <= (others=>'0');
---		elsif(pix_clock_s = '1') then
---			if(char_we = '1') then
---				char_address <= char_address + 1;
---			 elsif(char_address = "0001001011000000") then
---				char_address <= (others=>'0');
---			 else char_address <= char_address;
+--			help_c <= (others=>'0');
+--		elsif(rising_edge (pix_clock_s)) then
+--			help_c <= help_c + 1;
+--			if(help_c = 4799) then
+--				help_c <= (others=>'0');
 --			end if;
 --		end if;
 --	end process;
 --
 --	char_we <= '1';
---						
+--	char_address <= help_c;
+--	
 --	-- printing LPRS2 on screen -- 
 --	char_value <= "001100" when (char_address = "000000" & x"02") else
 --						"010000" when (char_address = "000000" & x"03") else
@@ -327,26 +330,46 @@ begin
   --pixel_address
   --pixel_value
   --pixel_we
-	pixel_we <= '1';
-	
-   process (pix_clock_s, reset_n_i) begin
+		
+	process (pix_clock_s, reset_n_i) begin
 		if(reset_n_i = '0') then
-			 pixel_address <= (others=>'0');
-		elsif(pix_clock_s = '1') then
-			if(pixel_we = '1') then
-				pixel_address <= pixel_address + 1;
-			 elsif(pixel_address = "0000000111000010") then
-				pixel_address <= (others=>'0');
-			 else pixel_address <= pixel_address;
+			help_c_g <= (others=>'0');
+			mover <= (others=>'0');
+			endofscreen <= (others=>'0');
+		elsif(rising_edge (pix_clock_s)) then
+			help_c_g <= help_c_g + 1;
+			if(help_c_g = 9579) then
+				help_c_g <= (others=>'0');
+				endofscreen <= endofscreen + 1;
+				if endofscreen = 10 then
+					mover <= mover + 1;
+				else 
+					mover <= mover;
+				end if;
 			end if;
 		end if;
 	end process;
 	
-	pixel_value <= "00000000000000000000000000001100" when (pixel_address = "000000" & x"02") else
-						"00000000000000000000000000010000" when (pixel_address = "000000" & x"03") else
-						"00000000000000000000000000010010" when (pixel_address = "000000" & x"04") else
-						"00000000000000000000000000010011" when (pixel_address = "000000" & x"05") else
-						"00000000000000000000000000110010" when (pixel_address = "000000" & x"06") else
-						"00000000000000000000000000100000";
-  
+	pixel_we <= '1';
+	pixel_address <= help_c_g;
+	
+	
+	pixel_value <= x"FFFF0000" when (pixel_address = (x"00000000"+mover)) else
+						x"FFFF0000" when (pixel_address = (x"00000014"+mover)) else
+						x"FFFF0000" when (pixel_address = (x"00000028"+mover)) else
+						x"FFFF0000" when (pixel_address = (x"0000003c"+mover)) else
+						x"FFFF0000" when (pixel_address = (x"00000050"+mover)) else
+						x"FFFF0000" when (pixel_address = (x"00000064"+mover)) else
+						x"FFFF0000" when (pixel_address = (x"00000078"+mover)) else
+						x"FFFF0000" when (pixel_address = (x"0000008c"+mover)) else
+						x"FFFF0000" when (pixel_address = (x"000000A0"+mover)) else
+						x"FFFF0000" when (pixel_address = (x"000000B4"+mover)) else
+						x"FFFF0000" when (pixel_address = (x"000000c8"+mover)) else
+						x"FFFF0000" when (pixel_address = (x"000000DC"+mover)) else
+						x"FFFF0000" when (pixel_address = (x"000000F0"+mover)) else
+						x"FFFF0000" when (pixel_address = (x"00000104"+mover)) else
+						x"FFFF0000" when (pixel_address = (x"00000118"+mover)) else
+						x"FFFF0000" when (pixel_address = (x"0000012c"+mover)) else
+						x"00000000";
+					
 end rtl;
